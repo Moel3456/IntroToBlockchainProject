@@ -1,0 +1,11 @@
+services:
+  node:
+    build: .
+    ports:
+      - "18018:18018"
+    volumes:
+      - peer_data:/app/data
+    stop_grace_period: 15s
+
+volumes:
+  peer_data:
