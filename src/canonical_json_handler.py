@@ -47,10 +47,17 @@ class CanonicalJSONHandler():
 
     @staticmethod
     def is_canonical_json(json_str: str) -> bool:
-        """Determine if content is canonical."""
+        """Return whether the input is one canonical JSON object."""
+        if not isinstance(json_str, str):
+            return False
+
         try:
-            data = CanonicalJSONHandler.to_dict(json_str)[0]
-            return json_str == CanonicalJSONHandler.to_canonical_json(data)
+            messages = CanonicalJSONHandler.to_dict(json_str)
+
+            if len(messages) != 1:
+                return False
+
+            return json_str == CanonicalJSONHandler.to_canonical_json(messages[0])
         except (json.JSONDecodeError, TypeError, ValueError):
             return False
 

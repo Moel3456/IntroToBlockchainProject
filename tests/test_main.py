@@ -108,13 +108,35 @@ class TestRunNode(unittest.TestCase):
 
 class TestMissingModules(unittest.TestCase):
     def test_network_adapter_unavailable(self):
-        with self.assertRaises(NetworkUnavailableError):
-            create_network_adapter(Settings())
+        missing_network = ModuleNotFoundError(
+            "No module named 'src.network'",
+            name="src.network",
+        )
+
+        with mock.patch.object(
+            main_module.importlib,
+            "import_module",
+            side_effect=missing_network,
+        ):
+            with self.assertRaises(NetworkUnavailableError):
+                create_network_adapter(Settings())
 
     def test_main_fails_clearly_without_network(self):
-        with mock.patch("logging.basicConfig"), mock.patch("signal.signal"), \
-                mock.patch.object(main_module, "run_node") as run_node_mock, \
-                self.assertLogs("src.main", level="ERROR") as logs:
+        error = NetworkUnavailableError(
+            "The networking layer is unavailable: src/network.py"
+        )
+
+        with (
+            mock.patch("logging.basicConfig"),
+            mock.patch("signal.signal"),
+            mock.patch.object(
+                main_module,
+                "create_network_adapter",
+                side_effect=error,
+            ),
+            mock.patch.object(main_module, "run_node") as run_node_mock,
+            self.assertLogs("src.main", level="ERROR") as logs,
+        ):
             exit_code = main_module.main()
 
         self.assertEqual(1, exit_code)
@@ -122,8 +144,18 @@ class TestMissingModules(unittest.TestCase):
         self.assertIn("src/network.py", "\n".join(logs.output))
 
     def test_default_settings_without_config(self):
-        with self.assertLogs("src.main", level="WARNING"):
-            settings = main_module.load_settings()
+        missing_config = ModuleNotFoundError(
+            "No module named 'src.config'",
+            name="src.config",
+        )
+
+        with mock.patch.object(
+            main_module.importlib,
+            "import_module",
+            side_effect=missing_config,
+        ):
+            with self.assertLogs("src.main", level="WARNING"):
+                settings = main_module.load_settings()
 
         self.assertEqual(Settings(), settings)
         self.assertEqual(18018, settings.port)

@@ -255,6 +255,18 @@ class ProtocolHandler:
             state = self._connections.get(conn_id)
             if state is None or state.closing:
                 return
+            if (
+                not state.hello_received
+                and self._clock() >= state.handshake_deadline
+            ):
+                self._reject(
+                    state,
+                    ProtocolViolation(
+                        INVALID_HANDSHAKE,
+                        "No hello received within 20 seconds",
+                    ),
+                )
+                return
             if not line.strip():
                 return  # tolerate blank lines, e.g. from "\r\n" or "\n\n"
 
