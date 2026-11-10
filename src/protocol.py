@@ -56,6 +56,7 @@ MAX_AGENT_LENGTH = 128
 
 INVALID_FORMAT = "INVALID_FORMAT"
 INVALID_HANDSHAKE = "INVALID_HANDSHAKE"
+UNKNOWN_OBJECT = "UNKNOWN_OBJECT"
 
 # "0.10.x with x a single decimal digit"
 _VERSION_PATTERN = re.compile(r"0\.10\.[0-9]")
@@ -210,13 +211,13 @@ class ProtocolHandler:
     """
 
     def __init__(
-        self,
-        transport: Transport,
-        *,
-        agent: str,
-        advertised_address: str | None = None,
-        storage: type[PeersStorage] = PeersStorage,
-        clock: Callable[[], float] = time.monotonic,
+            self,
+            transport: Transport,
+            *,
+            agent: str,
+            advertised_address: str | None = None,
+            storage: type[PeersStorage] = PeersStorage,
+            clock: Callable[[], float] = time.monotonic,
     ) -> None:
         """
         agent: name sent in our hello.
@@ -256,8 +257,8 @@ class ProtocolHandler:
             if state is None or state.closing:
                 return
             if (
-                not state.hello_received
-                and self._clock() >= state.handshake_deadline
+                    not state.hello_received
+                    and self._clock() >= state.handshake_deadline
             ):
                 self._reject(
                     state,

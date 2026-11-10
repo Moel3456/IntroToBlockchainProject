@@ -3,26 +3,21 @@ import hashlib
 
 class ObjectHandler:
     @staticmethod
-    def prep_get_object():
-        pass
+    def get_get_object_message(obj_id: str) -> dict:
+        return {"type": "getobject", "objectid": obj_id}
 
     @staticmethod
-    def prep_i_have_object():
-        pass
+    def get_i_have_object_message(obj_id: str) -> dict:
+        return {"type": "ihaveobject", "objectid": obj_id}
 
     @staticmethod
-    def prep_object_message():
-        pass
+    def get_object_message(obj: dict) -> dict:
+        """Return a ready-to-send object message."""
+        return {"type": "object", "object": obj}
 
     @staticmethod
     def to_object_id(obj: str) -> str:
-        """
-            Generate a BLAKE2s object ID.
+        """obj: Object represented as a canonical JSON string.
 
-            Args:
-                obj: Object represented as a canonical JSON string.
-
-            Returns:
-                The BLAKE2s hash as a hexadecimal string.
-            """
+        Return the BLAKE2s hash as a hexadecimal string."""
         return hashlib.blake2s(obj.encode("utf-8")).hexdigest()

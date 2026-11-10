@@ -23,3 +23,24 @@ class TestObjectHandler(unittest.TestCase):
         actual = ObjectHandler.to_object_id(cl_json)
 
         self.assertEqual(expected, actual)
+
+    def test_get_get_object_message(self):
+        obj_id = ObjectHandler.to_object_id("randomString")
+        actual = ObjectHandler.get_get_object_message(obj_id)
+        expected = {"type": "getobject", "objectid": obj_id}
+
+        self.assertEqual(expected, actual)
+
+    def test_get_i_have_object_message(self):
+        obj_id = ObjectHandler.to_object_id("randomString")
+        actual = ObjectHandler.get_i_have_object_message(obj_id)
+        expected = {"type": "ihaveobject", "objectid": obj_id}
+
+        self.assertEqual(expected, actual)
+
+    def test_get_object_message(self):
+        obj = {"created": 1671062400, "miner": "Marabu", "type": "block"}
+        actual = ObjectHandler.get_object_message(obj)
+        expected = {"type": "object", "object": obj}
+
+        self.assertEqual(expected, actual)
