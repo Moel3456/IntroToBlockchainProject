@@ -3,6 +3,8 @@ import unittest
 from src.object_db import ObjectDB
 from src.object_handler import ObjectHandler
 
+from src.canonical_json_handler import CanonicalJSONHandler
+
 
 class TestObjectHandler(unittest.TestCase):
     def setUp(self):
@@ -23,8 +25,8 @@ class TestObjectHandler(unittest.TestCase):
         self.assertEqual(len(result), 1)
 
     def test_check_object_contained(self):
-        obj_json = '{"test": "test"}'
-        obj_id = ObjectHandler.to_object_id(obj_json)
+        obj_json = {"test": "test"}
+        obj_id = ObjectHandler.to_object_id(CanonicalJSONHandler.to_canonical_json(obj_json))
 
         contained = self.db.check_object_contained(obj_id)
         self.assertFalse(contained)
@@ -41,12 +43,41 @@ class TestObjectHandler(unittest.TestCase):
         self.assertTrue(self.db.store_object(obj_json))
         self.assertFalse(self.db.store_object(obj_json))
 
+    def test_store_object_from_dict(self):
+        obj = {"test": "test"}
+
+        self.assertTrue(self.db.store_object(obj))
+
+        obj_id = ObjectHandler.to_object_id(
+            CanonicalJSONHandler.to_canonical_json(obj)
+        )
+        self.assertEqual(
+            CanonicalJSONHandler.to_canonical_json(obj),
+            self.db.get_object_with_id(obj_id, False)
+        )
+
+    def test_store_duplicate_dict(self):
+        obj = {"test": "test"}
+
+        self.assertTrue(self.db.store_object(obj))
+        self.assertFalse(self.db.store_object(obj))
+
+    def test_store_invalid_json(self):
+        invalid_json = '{"test":'
+
+        self.assertFalse(self.db.store_object(invalid_json))
+
+    def test_store_non_string_non_dict(self):
+        self.assertFalse(self.db.store_object(None))
+        self.assertFalse(self.db.store_object(123))
+        self.assertFalse(self.db.store_object(["test"]))
+
     def test_get_object_with_id(self):
         expected = '{"test":"test"}'
         obj_id = ObjectHandler.to_object_id(expected)
 
         self.db.store_object(expected)
-        actual = self.db.get_object_with_id(obj_id)
+        actual = self.db.get_object_with_id(obj_id, False)
         self.assertEqual(expected, actual)
 
     def test_get_object_with_id_fail(self):
@@ -64,4 +95,4 @@ class TestObjectHandler(unittest.TestCase):
         self.db.store_object(obj_json)
         self.assertIsNone(self.db.delete_object_with_id(obj_id))
 
-        self.assertIsNone(self.db.get_object_with_id(obj_id))
+        self.assertIsNone(self.db.get_object_with_id(obj_id, False))
